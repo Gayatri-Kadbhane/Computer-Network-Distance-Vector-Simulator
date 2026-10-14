@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Distance Vector Routing Simulator</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5fb;
+    color: #1e293b;
+}
+
+header {
+    background: linear-gradient(135deg, #101c38, #315cf5);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0 0 10px;
+    font-size: 32px;
+}
+
+header p {
+    margin: 0;
+    color: #dbeafe;
+}
+
+.container {
+    max-width: 1150px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 20px #0000000c;
+}
+
+h2 {
+    margin-top: 0;
+    color: #1e3a8a;
+}
+
+h3 {
+    margin-bottom: 12px;
+}
+
+input, select, button {
+    padding: 10px;
+    border-radius: 7px;
+    border: 1px solid #cbd5e1;
+    font-size: 14px;
+}
+
+input, select {
+    max-width: 100%;
+}
+
+button {
+    background: #315cf5;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #2446c7;
+}
+
+button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: end;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 110px;
+}
+
+.field label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.router-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.router-input {
+    background: #f8faff;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #dbe4f0;
+}
+
+.router-input label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+.router-input input {
+    width: 100%;
+}
+
+.link-list {
+    margin-top: 15px;
+}
+
+.link-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.remove-btn {
+    background: #dc3545;
+    padding: 7px 10px;
+}
+
+.remove-btn:hover {
+    background: #b91c1c;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.secondary {
+    background: #0f9d8a;
+}
+
+.secondary:hover {
+    background: #087f70;
+}
+
+.reset {
+    background: #64748b;
+}
+
+.message {
+    margin-top: 12px;
+    font-weight: bold;
+    font-size: 13px;
+    color: #087f70;
+}
+
+.network {
+    width: 100%;
+    min-height: 300px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8faff;
+    overflow: hidden;
+}
+
+.network svg {
+    width: 100%;
+    height: 350px;
+    display: block;
+}
+
+.link-line {
+    stroke: #94a3b8;
+    stroke-width: 2.5;
+}
+
+.link-cost {
+    fill: #0f766e;
+    font-size: 13px;
+    font-weight: bold;
+    text-anchor: middle;
+}
+
+.router-circle {
+    fill: white;
+    stroke: #315cf5;
+    stroke-width: 3;
+}
+
+.router-label {
+    fill: #1e3a8a;
+    font-size: 14px;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.route-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 15px;
+    overflow-wrap: anywhere;
+}
+
+.route-path {
+    color: #1d4ed8;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.route-cost {
+    display: inline-block;
+    background: #dcfce7;
+    color: #166534;
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    font-size: 13px;
+}
+
+th {
+    background: #eff6ff;
+    color: #1e3a8a;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.iteration {
+    background: #f8fafc;
+    padding: 12px;
+    border-left: 4px solid #315cf5;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.small-text {
+    color: #64748b;
+    font-size: 13px;
+}
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 25px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .route-path {
+        font-size: 18px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Distance Vector Routing Simulator</h1>
+    <p>Create routers, configure link costs, and find the best route.</p>
+</header>
+
+<div class="container">
+
+    <!-- CREATE ROUTERS -->
+    <section class="card">
+        <h2>1. Create Your Network</h2>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="routerCount">Number of Routers</label>
+                <input type="number" id="routerCount"
+                       min="2" max="12" value="4">
+            </div>
+
+            <button onclick="createRouters()">Create Routers</button>
+            <button class="reset" onclick="loadExample()">Load Example</button>
+        </div>
+
+        <p class="small-text">
+            You can create 2–12 routers and customize their names.
+        </p>
+
+        <h3>Customize Router Names</h3>
+        <div id="routerNames" class="router-grid"></div>
+    </section>
+
+    <!-- ADD LINKS -->
+    <section class="card">
+        <h2>2. Add Connections and Costs</h2>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="fromRouter">From Router</label>
+                <select id="fromRouter"></select>
+            </div>
+
+            <div class="field">
+                <label for="toRouter">To Router</label>
+                <select id="toRouter"></select>
+            </div>
+
+            <div class="field">
+                <label for="linkCost">Link Cost</label>
+                <input type="number" id="linkCost"
+                       min="1" max="999" value="2">
+            </div>
+
+            <button onclick="addLink()">Add / Update Link</button>
+            <button class="reset" onclick="removeLink()">Remove Link</button>
+        </div>
+
+        <div id="linksList" class="link-list"></div>
+
+        <div class="button-row">
+            <button onclick="runSimulation()">Run Simulation</button>
+            <button class="secondary" onclick="findBestRoute()">
+                Find Best Route
+            </button>
+        </div>
+
+        <div id="message" class="message"></div>
+    </section>
+
+    <!-- NETWORK DIAGRAM -->
+    <section class="card">
+        <h2>3. Network Diagram</h2>
+        <p class="small-text">
+            The number on each connection represents its direct link cost.
+        </p>
+
+        <div id="network" class="network"></div>
+    </section>
+
+    <!-- SOURCE DESTINATION -->
+    <section class="card">
+        <h2>4. Find the Best Route</h2>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="sourceRouter">Source Router</label>
+                <select id="sourceRouter"></select>
+            </div>
+
+            <div class="field">
+                <label for="destinationRouter">Destination Router</label>
+                <select id="destinationRouter"></select>
+            </div>
+
+            <button onclick="findBestRoute()">Find Best Route</button>
+        </div>
+
+        <div id="routeResult" class="route-card">
+            Select a source and destination, then click Find Best Route.
+        </div>
+    </section>
+
+    <!-- ROUTING TABLE -->
+    <section class="card">
+        <h2>5. Routing Table</h2>
+
+        <div class="form-row">
+            <div class="field">
+                <label for="tableRouter">Select Router</label>
+                <select id="tableRouter"
+                        onchange="displayRoutingTable()"></select>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Destination</th>
+                        <th>Minimum Cost</th>
+                        <th>Next Hop</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="routingTable">
+                    <tr>
+                        <td colspan="4">Run the simulation first.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ITERATION LOG -->
+    <section class="card">
+        <h2>6. Simulation Steps</h2>
+        <p class="small-text">
+            This log shows how routers update their distance vectors.
+        </p>
+
+        <div id="iterations">
+            Run the simulation to see the iterations.
+        </div>
+    </section>
+
+</div>
+
+<script>
+let routers = ["A", "B", "C", "D"];
+
+let links = [
+    { from: "A", to: "B", cost: 2 },
+    { from: "A", to: "C", cost: 7 },
+    { from: "B", to: "C", cost: 3 },
+    { from: "B", to: "D", cost: 5 },
+    { from: "C", to: "D", cost: 1 }
+];
+
+let distances = {};
+let nextHops = {};
+let simulationDone = false;
+let logs = [];
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+function showMessage(text) {
+    document.getElementById("message").textContent = text;
+}
+
+function createRouters() {
+    const count = Number(document.getElementById("routerCount").value);
+
+    if (!Number.isInteger(count) || count < 2 || count > 12) {
+        alert("Enter a number between 2 and 12.");
+        return;
+    }
+
+    routers = Array.from({ length: count }, (_, i) => {
+        return i < 26 ? String.fromCharCode(65 + i) : "R" + (i + 1);
+    });
+
+    links = [];
+    resetSimulation();
+    renderAll();
+
+    showMessage("Routers created. Customize their names and add connections.");
+}
+
+function renderRouterNames() {
+    const container = document.getElementById("routerNames");
+
+    container.innerHTML = routers.map((router, index) => `
+        <div class="router-input">
+            <label for="routerName${index}">Router ${index + 1}</label>
+            <input
+                id="routerName${index}"
+                value="${escapeHTML(router)}"
+                maxlength="12"
+                data-index="${index}"
+            >
+        </div>
+    `).join("");
+
+    container.querySelectorAll("input").forEach(input => {
+        input.addEventListener("change", () => {
+            const index = Number(input.dataset.index);
+            const oldName = routers[index];
+            const newName = input.value.trim();
+
+            if (!newName) {
+                alert("Router name cannot be empty.");
+                input.value = oldName;
+                return;
+            }
+
+            if (routers.some((name, i) =>
+                i !== index && name.toLowerCase() === newName.toLowerCase()
+            )) {
+                alert("Router names must be unique.");
+                input.value = oldName;
+                return;
+            }
+
+            routers[index] = newName;
+
+            links.forEach(link => {
+                if (link.from === oldName) link.from = newName;
+                if (link.to === oldName) link.to = newName;
+            });
+
+            resetSimulation();
+            renderAll();
+
+            showMessage("Router name updated. Run the simulation again.");
+        });
+    });
+}
+
+function renderSelects() {
+    const ids = [
+        "fromRouter",
+        "toRouter",
+        "sourceRouter",
+        "destinationRouter",
+        "tableRouter"
+    ];
+
+    ids.forEach(id => {
+        const select = document.getElementById(id);
+        const previousValue = select.value;
+
+        select.innerHTML = routers.map(router => `
+            <option value="${escapeHTML(router)}">
+                ${escapeHTML(router)}
+            </option>
+        `).join("");
+
+        if (routers.includes(previousValue)) {
+            select.value = previousValue;
+        }
+    });
+
+    if (routers.length > 1 &&
+        document.getElementById("toRouter").value ===
+        document.getElementById("fromRouter").value) {
+        document.getElementById("toRouter").selectedIndex = 1;
+    }
+
+    if (routers.length > 1 &&
+        document.getElementById("destinationRouter").value ===
+        document.getElementById("sourceRouter").value) {
+        document.getElementById("destinationRouter").selectedIndex = 1;
+    }
+}
+
+function renderLinks() {
+    const container = document.getElementById("linksList");
+
+    if (links.length === 0) {
+        container.innerHTML =
+            '<p class="small-text">No connections added yet.</p>';
+        return;
+    }
+
+    container.innerHTML = links.map((link, index) => `
+        <div class="link-item">
+            <span>
+                <strong>${escapeHTML(link.from)} ↔
+                ${escapeHTML(link.to)}</strong>
+                &nbsp; | Cost: ${link.cost}
+            </span>
+
+            <button class="remove-btn"
+                    onclick="deleteLink(${index})">
+                Delete
+            </button>
+        </div>
+    `).join("");
+}
+
+function addLink() {
+    const from = document.getElementById("fromRouter").value;
+    const to = document.getElementById("toRouter").value;
+    const cost = Number(document.getElementById("linkCost").value);
+
+    if (from === to) {
+        showMessage("Select two different routers.");
+        return;
+    }
+
+    if (!Number.isInteger(cost) || cost < 1 || cost > 999) {
+        showMessage("Cost must be a whole number from 1 to 999.");
+        return;
+    }
+
+    const existing = links.find(link =>
+        (link.from === from && link.to === to) ||
+        (link.from === to && link.to === from)
+    );
+
+    if (existing) {
+        existing.cost = cost;
+        showMessage("Connection cost updated.");
+    } else {
+        links.push({ from, to, cost });
+        showMessage("Connection added successfully.");
+    }
+
+    resetSimulation();
+    renderAll();
+}
+
+function deleteLink(index) {
+    links.splice(index, 1);
+    resetSimulation();
+    renderAll();
+    showMessage("Connection deleted. Run the simulation again.");
+}
+
+function resetSimulation() {
+    distances = {};
+    nextHops = {};
+    simulationDone = false;
+    logs = [];
+
+    document.getElementById("routingTable").innerHTML =
+        '<tr><td colspan="4">Run the simulation first.</td></tr>';
+
+    document.getElementById("routeResult").textContent =
+        "Run the simulation, then select a source and destination.";
+
+    document.getElementById("iterations").innerHTML =
+        "Run the simulation to see the iterations.";
+}
+
+function renderAll() {
+    renderRouterNames();
+    renderSelects();
+    renderLinks();
+    drawNetwork();
+}
+
+function drawNetwork() {
+    const container = document.getElementById("network");
+
+    const width = Math.max(container.clientWidth, 320);
+    const height = 350;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width * 0.36, 125);
+
+    const positions = {};
+
+    routers.forEach((router, index) => {
+        const angle = -Math.PI / 2 +
+            (2 * Math.PI * index / routers.length);
+
+        positions[router] = {
+            x: centerX + radius * Math.cos(angle),
+            y: centerY + radius * Math.sin(angle)
+        };
+    });
+
+    let svg = `
+        <svg viewBox="0 0 ${width} ${height}"
+             role="img"
+             aria-label="Network diagram">
+    `;
+
+    links.forEach(link => {
+        const a = positions[link.from];
+        const b = positions[link.to];
+
+        if (!a || !b) return;
+
+        const midX = (a.x + b.x) / 2;
+        const midY = (a.y + b.y) / 2;
+
+        svg += `
+            <line class="link-line"
+                  x1="${a.x}" y1="${a.y}"
+                  x2="${b.x}" y2="${b.y}"></line>
+
+            <rect x="${midX - 17}" y="${midY - 14}"
+                  width="34" height="25"
+                  rx="6" fill="white"></rect>
+
+            <text class="link-cost"
+                  x="${midX}" y="${midY + 3}">
+                ${link.cost}
+            </text>
+        `;
+    });
+
+    routers.forEach(router => {
+        const p = positions[router];
+
+        svg += `
+            <circle class="router-circle"
+                    cx="${p.x}" cy="${p.y}" r="24"></circle>
+
+            <text class="router-label"
+                  x="${p.x}" y="${p.y}">
+                ${escapeHTML(router.length > 5
+                    ? router.slice(0, 5)
+                    : router)}
+            </text>
+        `;
+    });
+
+    svg += "</svg>";
+
+    container.innerHTML = svg;
+}
+
+/*
+ * Distance Vector Routing:
+ * Every router starts with its own distance vector.
+ * Routers repeatedly exchange route information with neighbours.
+ * A route is updated when a lower total cost is discovered.
+ */
+function runSimulation() {
+    distances = {};
+    nextHops = {};
+    logs = [];
+
+    routers.forEach(from => {
+        distances[from] = {};
+        nextHops[from] = {};
+
+        routers.forEach(to => {
+            distances[from][to] = from === to ? 0 : Infinity;
+            nextHops[from][to] = from === to ? from : null;
+        });
+    });
+
+    links.forEach(link => {
+        distances[link.from][link.to] = link.cost;
+        distances[link.to][link.from] = link.cost;
+
+        nextHops[link.from][link.to] = link.to;
+        nextHops[link.to][link.from] = link.from;
+    });
+
+    logs.push(
+        "Initialization: Every router knows itself and its direct neighbours."
+    );
+
+    let changed = true;
+    let iteration = 0;
+    const maxIterations = routers.length * routers.length + 5;
+
+    while (changed && iteration < maxIterations) {
+        changed = false;
+        iteration++;
+
+        // Use copies so all routers read the previous iteration's values.
+        const oldDistances = JSON.parse(JSON.stringify(
+            distances,
+            (key, value) => value === Infinity ? "INF" : value
+        ));
+
+        const oldNextHops = JSON.parse(JSON.stringify(nextHops));
+
+        routers.forEach(router => {
+            const neighbours = links
+                .filter(link =>
+                    link.from === router || link.to === router
+                )
+                .map(link => ({
+                    router: link.from === router
+                        ? link.to : link.from,
+                    cost: link.cost
+                }));
+
+            neighbours.forEach(neighbour => {
+                routers.forEach(destination => {
+                    const neighbourDistance =
+                        oldDistances[neighbour.router][destination] === "INF"
+                            ? Infinity
+                            : oldDistances[neighbour.router][destination];
+
+                    if (!Number.isFinite(neighbourDistance)) return;
+
+                    const candidate = neighbour.cost + neighbourDistance;
+                    const current = distances[router][destination];
+
+                    if (candidate < current) {
+                        distances[router][destination] = candidate;
+                        nextHops[router][destination] = neighbour.router;
+                        changed = true;
+
+                        logs.push(
+                            `Iteration ${iteration}: Router ${router} found a better route to ${destination}. ` +
+                            `Cost ${current === Infinity ? "∞" : current} → ${candidate} ` +
+                            `via ${neighbour.router}.`
+                        );
+                    }
+                });
+            });
+        });
+
+        // If there were no changes, the network has converged.
+        if (!changed) {
+            logs.push(
+                `Iteration ${iteration}: No routes changed. The network has converged.`
+            );
+        }
+    }
+
+    simulationDone = true;
+
+    displayRoutingTable();
+    displayIterations();
+
+    showMessage(
+        "Simulation complete! You can now find the best route."
+    );
+}
+
+function findBestRoute() {
+    if (!simulationDone) {
+        showMessage("Please click Run Simulation first.");
+        document.getElementById("routeResult").textContent =
+            "Run the simulation before finding the best route.";
+        return;
+    }
+
+    const source = document.getElementById("sourceRouter").value;
+    const destination =
+        document.getElementById("destinationRouter").value;
+
+    const result = document.getElementById("routeResult");
+
+    if (source === destination) {
+        result.innerHTML = `
+            <strong>Source and destination are the same.</strong>
+            <p class="route-path">${escapeHTML(source)}</p>
+            <span class="route-cost">Total Cost: 0</span>
+        `;
+        return;
+    }
+
+    if (!Number.isFinite(distances[source][destination])) {
+        result.innerHTML = `
+            <strong>No route available.</strong>
+            <p>There is no connected path from
+            ${escapeHTML(source)} to ${escapeHTML(destination)}.</p>
+            <span class="route-cost">Total Cost: ∞</span>
+        `;
+        return;
+    }
+
+    const path = [source];
+    let current = source;
+    const visited = new Set([source]);
+
+    while (current !== destination && path.length <= routers.length) {
+        const hop = nextHops[current][destination];
+
+        if (!hop || visited.has(hop)) {
+            result.innerHTML =
+                "<strong>Could not reconstruct the route. Run the simulation again.</strong>";
+            return;
+        }
+
+        path.push(hop);
+        visited.add(hop);
+        current = hop;
+    }
+
+    if (current !== destination) {
+        result.innerHTML = "<strong>No valid route found.</strong>";
+        return;
+    }
+
+    result.innerHTML = `
+        <strong>Best Route from ${escapeHTML(source)}
+        to ${escapeHTML(destination)}</strong>
+
+        <p class="route-path">
+            ${path.map(escapeHTML).join(" → ")}
+        </p>
+
+        <span class="route-cost">
+            Total Cost: ${distances[source][destination]}
+        </span>
+
+        <p class="small-text">
+            Number of links: ${path.length - 1}
+        </p>
+    `;
+}
+
+function displayRoutingTable() {
+    if (!simulationDone) return;
+
+    const router = document.getElementById("tableRouter").value;
+    const tbody = document.getElementById("routingTable");
+
+    tbody.innerHTML = routers.map(destination => {
+        const cost = distances[router][destination];
+        const reachable = Number.isFinite(cost);
+
+        let status = "Unreachable";
+        if (router === destination) status = "Local";
+        else if (reachable) status = "Reachable";
+
+        return `
+            <tr>
+                <td>${escapeHTML(destination)}</td>
+                <td>${reachable ? cost : "∞"}</td>
+                <td>${nextHops[router][destination]
+                    ? escapeHTML(nextHops[router][destination])
+                    : "—"}</td>
+                <td>${status}</td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function displayIterations() {
+    const container = document.getElementById("iterations");
+
+    container.innerHTML = logs.map((log, index) => `
+        <div class="iteration">
+            <strong>Step ${index + 1}</strong><br>
+            ${escapeHTML(log)}
+        </div>
+    `).join("");
+}
+
+function loadExample() {
+    routers = ["A", "B", "C", "D"];
+
+    links = [
+        { from: "A", to: "B", cost: 2 },
+        { from: "A", to: "C", cost: 7 },
+        { from: "B", to: "C", cost: 3 },
+        { from: "B", to: "D", cost: 5 },
+        { from: "C", to: "D", cost: 1 }
+    ];
+
+    document.getElementById("routerCount").value = 4;
+    document.getElementById("linkCost").value = 2;
+
+    resetSimulation();
+    renderAll();
+
+    showMessage("Example network loaded. Click Run Simulation.");
+}
+
+window.addEventListener("resize", drawNetwork);
+
+loadExample();
+</script>
+
+</body>
+</html>
